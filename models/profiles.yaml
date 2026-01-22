@@ -1,0 +1,2160 @@
+# This is a sample file, for detailed reference see: https://www.rudderstack.com/docs/profiles/get-started/profile-builder
+models:
+### ID GRAPH MODELS ###
+  - name: workspace_id_graph
+    model_type: id_stitcher
+    model_spec:
+      validity_time: 24h # 1 day
+      entity_key: workspace
+      edge_sources:
+        - from: inputs/app_workspaces
+  - name: account_id_graph
+    model_type: id_stitcher
+    model_spec:
+      validity_time: 24h # 1 day
+      entity_key: account
+      edge_sources:
+        - from: inputs/sf_account
+          
+### ENTITY COHORTS ###
+  - name: AllCustomersProspects
+    model_type: entity_cohort
+    model_spec:
+      extends: account/all
+      materialization:
+        output_type: table
+      filter_pipeline:
+        - type: include
+          value: "({{ account.Var('sf_account_status_basic') }} = 'Customer' and {{ account.Var('sf_plan_type_basic') }} is not null) OR ({{ account.Var('sf_account_status_basic') }} = 'Prospect' AND {{ account.Var('sf_account_sub_status_basic') }} = 'In Active Opportunity') OR ({{ account.Var('sf_account_status_basic') }} = 'Churned')"
+      feature_views:
+        using_ids:
+          - id: organization_id
+            name: customer_prospects_feature_view_organization_id
+          - id: salesforce_id
+            name: customer_prospects_feature_view_salesforce_id
+  - name: CurrentCustomers
+    model_type: entity_cohort
+    model_spec:
+      extends: account/all
+      materialization:
+        output_type: table
+      filter_pipeline:
+        - type: include
+          value: "{{ account.Var('sf_account_status_basic') }} = 'Customer' and {{ account.Var('sf_plan_type_basic') }} is not null"
+      feature_views:
+        using_ids:
+          - id: organization_id
+            name: account_feature_view_organization_id
+          - id: salesforce_id
+            name: account_feature_view_salesforce_id
+          - id: slack_channel_name
+            name: account_feature_view_slack_channel_name
+      
+### FEATURE TABLE ###
+  - name: workspace_profile
+    model_type: feature_table_model
+    model_spec:
+      validity_time: 24h
+      entity_key: workspace
+      features: 
+        - app_workspace_id
+        - app_organization_id
+        - app_workspace_environment
+        - app_workspace_name
+        - app_event_audit_enabled
+        - app_number_destinations_created
+        - app_number_destinations_enabled
+        - app_number_destinations_connected_enabled
+        - app_number_warehouse_connected_enabled
+        - app_number_destinations_connected_marketing
+        - app_number_destinations_connected_analytics
+        - app_number_destinations_connected_advertising
+        - app_number_destinations_connected_crm
+        - app_number_destinations_connected_warehouse
+        - app_number_destinations_connected_snowflake
+        - app_number_destinations_connected_ga4
+        - app_number_destinations_connected_braze
+        - app_number_destinations_connected_amplitude
+        - app_number_destinations_connected_mixpanel
+        - app_number_destinations_connected_customerio
+        - app_number_transformations_created
+        - app_number_transformations_created_javascript
+        - app_number_transformations_created_python
+        - app_number_transformations_connected_enabled
+        - app_number_transformations_connected_enabled_javascript
+        - app_number_transformations_connected_enabled_python
+        - app_number_sources_created
+        - app_number_sources_enabled
+        - app_number_sources_connected_enabled
+        - app_number_sources_event_stream_connected_enabled
+        - app_number_sources_webhook_connected_enabled
+        - app_number_sources_reverse_etl_connected_enabled
+        - app_number_sources_etl_connected_enabled
+        - app_number_sources_shopify_connected_enabled
+        - app_number_sources_shopify_ever
+        - app_number_tracking_plans_connected
+        - app_number_profiles_connected
+        - app_rudder_storage
+        - app_self_storage
+        - app_event_storage
+        - app_sso_enabled
+        - app_data_residency
+        - event_volume_month_to_date
+        - event_volume_month_1
+        - event_volume_month_2
+        - event_volume_month_3
+        - event_volume_month_4
+        - event_volume_month_5
+        - event_volume_month_6
+        - event_volume_month_7
+        - event_volume_month_8
+        - event_volume_month_9
+        - event_volume_month_10
+        - event_volume_month_11
+        - event_volume_month_12
+        - event_volume_days_last_30
+        - event_volume_days_last_60
+        - event_volume_days_last_90
+        - app_number_transformations_created_days_last_7
+        - app_number_transformations_created_days_last_30
+        - app_number_transformations_created_days_last_90
+        - app_number_destinations_created_days_last_7
+        - app_number_destinations_created_days_last_30
+        - app_number_destinations_created_days_last_90
+        - app_number_sources_created_days_last_7
+        - app_number_sources_created_days_last_30
+        - app_number_sources_created_days_last_90
+        - app_number_distinct_users_workspaces_days_last_7
+        - app_number_distinct_users_workspaces_days_last_30
+        - app_number_distinct_users_workspaces_days_last_90
+        - app_number_destinations_deleted_days_last_7
+        - app_number_destinations_deleted_days_last_30
+        - app_number_destinations_deleted_days_last_90
+        - app_number_sources_deleted_days_last_7
+        - app_number_sources_deleted_days_last_30
+        - app_number_sources_deleted_days_last_90
+
+### FEATURE VAR GROUPS ###
+var_groups:
+  - name: workspace_vars
+    entity_key: workspace
+    vars:
+      - entity_var:
+          name: app_workspace_id
+          select: any_value(ID)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_organization_id
+          select: any_value(ORGANIZATIONID)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_workspace_environment
+          select: any_value(ENVIRONMENT)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_workspace_name
+          select: any_value(NAME)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_event_audit_enabled
+          select: any_value(eventauditenabled)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_number_destinations_created
+          select: count(ID)
+          from: inputs/app_destinations
+          where: DELETED = 'FALSE'
+      - entity_var:
+          name: app_number_destinations_enabled
+          select: count(ID)
+          from: inputs/app_destinations
+          where: DELETED = 'FALSE' and ENABLED = 'TRUE'
+      - entity_var:
+          name: app_number_destinations_connected_enabled
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+      - entity_var:
+          name: app_number_warehouse_connected_enabled
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_CATEGORY = 'warehouse'
+      - entity_var:
+          name: app_number_destinations_connected_marketing
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_CS_CATEGORY = 'Marketing'
+      - entity_var:
+          name: app_number_destinations_connected_analytics
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_CS_CATEGORY = 'Analytics'
+      - entity_var:
+          name: app_number_destinations_connected_advertising
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_CS_CATEGORY = 'Advertising'
+      - entity_var:
+          name: app_number_destinations_connected_crm
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_CS_CATEGORY = 'CRM'
+      - entity_var:
+          name: app_number_destinations_connected_warehouse
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_CS_CATEGORY = 'Warehouse'
+      - entity_var:
+          name: app_number_destinations_connected_snowflake
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_NAME = 'Snowflake'
+      - entity_var:
+          name: app_number_destinations_connected_ga4
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_NAME = 'Google Analytics 4 (GA4)'
+      - entity_var:
+          name: app_number_destinations_connected_braze
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_NAME = 'Braze'
+      - entity_var:
+          name: app_number_destinations_connected_amplitude
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_NAME = 'Amplitude'
+      - entity_var:
+          name: app_number_destinations_connected_mixpanel
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_NAME = 'Mixpanel'
+      - entity_var:
+          name: app_number_destinations_connected_customerio
+          select: count(DISTINCT DESTINATIONID)
+          from: inputs/app_cs_connections
+          where: DESTINATION_NAME = 'Customer IO'
+      - entity_var:
+          name: app_number_transformations_created
+          select: count(ID)
+          from: inputs/app_transformations
+      - entity_var:
+          name: app_number_transformations_created_javascript
+          select: count(ID)
+          from: inputs/app_transformations
+          where: LANGUAGE = 'javascript'
+      - entity_var:
+          name: app_number_transformations_created_python
+          select: count(ID)
+          from: inputs/app_transformations
+          where: LANGUAGE = 'python'
+      - entity_var:
+          name: app_number_transformations_connected_enabled
+          select: count(DISTINCT TRANSFORMATIONID)
+          from: inputs/app_cs_connections
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript
+          select: count(DISTINCT TRANSFORMATIONID)
+          from: inputs/app_cs_connections
+          where: LANGUAGE = 'javascript'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python
+          select: count(DISTINCT TRANSFORMATIONID)
+          from: inputs/app_cs_connections
+          where: LANGUAGE = 'pythonfaas'
+      - entity_var:
+          name: app_number_sources_created
+          select: count(ID)
+          from: inputs/app_sources
+          where: DELETED = 'FALSE'
+      - entity_var:
+          name: app_number_sources_enabled
+          select: count(ID)
+          from: inputs/app_sources
+          where: DELETED = 'FALSE' and ENABLED = 'TRUE'
+      - entity_var:
+          name: app_number_sources_connected_enabled
+          select: count(DISTINCT SOURCEID)
+          from: inputs/app_cs_connections
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled
+          select: count(DISTINCT SOURCEID)
+          from: inputs/app_cs_connections
+          where: SOURCE_TYPE = 'EventStream' OR SOURCE_TYPE = 'Webhook'
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled
+          select: count(DISTINCT SOURCEID)
+          from: inputs/app_cs_connections
+          where: SOURCE_TYPE = 'Webhook'
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled
+          select: count(DISTINCT SOURCEID)
+          from: inputs/app_cs_connections
+          where: SOURCE_TYPE = 'RETL'
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled
+          select: count(DISTINCT SOURCEID)
+          from: inputs/app_cs_connections
+          where: SOURCE_TYPE = 'ETL'
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled
+          select: count(DISTINCT SOURCEID)
+          from: inputs/app_cs_connections
+          where: SOURCE_NAME = 'Shopify'
+      - entity_var:
+          name: app_number_sources_shopify_ever
+          select: count(DISTINCT id)
+          from: inputs/app_sources
+          where: SOURCEDEFINITIONID = '24uU1k8fCOXZ6fvjfFu64jZdM46' OR SOURCEDEFINITIONID = '2LjIxuugktfE20hTXNUiBt4d9M7'      
+      - entity_var:
+          name: app_number_tracking_plans_connected
+          select: count(DISTINCT TRACKINGPLANID)
+          from: inputs/app_tracking_plans
+          where: DELETED = FALSE
+      - entity_var:
+          name: app_number_profiles_connected
+          select: count(DISTINCT ID)
+          from: inputs/app_profiles
+          where: DELETED = FALSE
+      - entity_var:
+          name: app_rudder_storage
+          select: any_value(USERUDDERSERVERSTORAGE)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_self_storage
+          select: any_value(CASE WHEN "DATARETENTIONACCOUNTID" IS NULL THEN TO_BOOLEAN(0) ELSE TO_BOOLEAN(1) END)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_event_storage
+          select: CASE WHEN {{workspace.Var("app_rudder_storage")}} = 'TRUE' THEN 'RUDDER_STORAGE' WHEN {{workspace.Var("app_self_storage")}} = 'TRUE' THEN 'SELF_STORAGE' ELSE 'NO_STORAGE' END
+      - entity_var:
+          name: app_data_residency
+          select: any_value(DEFAULTREGION)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_sso_enabled
+          select: count(*)
+          from: inputs/app_workspaces
+          where: _SDC_DELETED_AT is null
+      - entity_var:
+          name: event_volume_month_to_date
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = date_trunc('month', current_date())
+      - entity_var:
+          name: event_volume_month_1
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-1)
+      - entity_var:
+          name: event_volume_month_2
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-2)
+      - entity_var:
+          name: event_volume_month_3
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-3)
+      - entity_var:
+          name: event_volume_month_4
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-4)
+      - entity_var:
+          name: event_volume_month_5
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-5)
+      - entity_var:
+          name: event_volume_month_6
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-6)
+      - entity_var:
+          name: event_volume_month_7
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-7)
+      - entity_var:
+          name: event_volume_month_8
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-8)
+      - entity_var:
+          name: event_volume_month_9
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-9)
+      - entity_var:
+          name: event_volume_month_10
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-10)
+      - entity_var:
+          name: event_volume_month_11
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-11)
+      - entity_var:
+          name: event_volume_month_12
+          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          from: inputs/monthly_event_volume
+          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-12)
+      - entity_var:
+          name: event_volume_days_last_30
+          select: ZEROIFNULL(SUM(DAILY_TOTAL))
+          from: inputs/daily_event_volume
+          where: REPORT_DATE >= DATEADD(day, -30, CURRENT_DATE())
+      - entity_var:
+          name: event_volume_days_last_60
+          select: ZEROIFNULL(SUM(DAILY_TOTAL))
+          from: inputs/daily_event_volume
+          where: REPORT_DATE >= DATEADD(day, -60, CURRENT_DATE())
+      - entity_var:
+          name: event_volume_days_last_90
+          select: ZEROIFNULL(SUM(DAILY_TOTAL))
+          from: inputs/daily_event_volume
+          where: REPORT_DATE >= DATEADD(day, -90, CURRENT_DATE())
+      - entity_var:
+          name: app_number_transformations_created_days_last_7
+          select: count(*)
+          from: inputs/app_transformations
+          where: createdat > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_transformations_created_days_last_30
+          select: count(*)
+          from: inputs/app_transformations
+          where: createdat > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_transformations_created_days_last_90
+          select: count(*)
+          from: inputs/app_transformations
+          where: createdat > dateadd(day, -90, current_date())
+      - entity_var:
+          name: app_number_destinations_created_days_last_7
+          select: count(*)
+          from: inputs/app_destinations
+          where: DELETED = 'FALSE' and createdat > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_destinations_created_days_last_30
+          select: count(*)
+          from: inputs/app_destinations
+          where: DELETED = 'FALSE' and createdat > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_destinations_created_days_last_90
+          select: count(*)
+          from: inputs/app_destinations
+          where: DELETED = 'FALSE' and createdat > dateadd(day, -90, current_date())
+      - entity_var:
+          name: app_number_sources_created_days_last_7
+          select: count(*)
+          from: inputs/app_sources
+          where: DELETED = 'FALSE' and createdat > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_sources_created_days_last_30
+          select: count(*)
+          from: inputs/app_sources
+          where: DELETED = 'FALSE' and createdat > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_sources_created_days_last_90
+          select: count(*)
+          from: inputs/app_sources
+          where: DELETED = 'FALSE' and createdat > dateadd(day, -90, current_date())
+      - entity_var:
+          name: app_number_distinct_users_workspaces_days_last_7
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_distinct_users_workspaces_days_last_30
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_distinct_users_workspaces_days_last_90
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+      - entity_var:
+          name: app_number_destinations_deleted_days_last_7
+          select: count(*)
+          from: inputs/app_tracks
+          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_destinations_deleted_days_last_30
+          select: count(*)
+          from: inputs/app_tracks
+          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_destinations_deleted_days_last_90
+          select: count(*)
+          from: inputs/app_tracks
+          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+      - entity_var:
+          name: app_number_sources_deleted_days_last_7
+          select: count(*)
+          from: inputs/app_tracks
+          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_sources_deleted_days_last_30
+          select: count(*)
+          from: inputs/app_tracks
+          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_sources_deleted_days_last_90
+          select: count(*)
+          from: inputs/app_tracks
+          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+  - name: account_basic_vars
+    entity_cohort: account/all
+    vars:
+      - entity_var:
+          name: sf_account_name_basic
+          select: any_value(name)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: app_org_name_basic
+          select: any_value(ORGNAME)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: app_org_id_basic
+          select: any_value(ORGID)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: sf_account_id_basic
+          select: any_value(id)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_account_status_basic
+          select: any_value(ACCOUNT_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_account_sub_status_basic
+          select: any_value(ACCOUNT_SUB_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_plan_type_basic
+          select: any_value(PRODUCT_TIER_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+  - name: cust_prosp_detail_vars
+    entity_cohort: models/AllCustomersProspects
+    vars:
+      - entity_var:
+          name: sf_account_name
+          select: any_value(name)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: app_org_name
+          select: any_value(ORGNAME)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: app_org_id
+          select: any_value(ORGID)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: sf_account_id
+          select: any_value(id)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_account_status
+          select: any_value(ACCOUNT_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_account_sub_status
+          select: any_value(ACCOUNT_SUB_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_plan_type
+          select: any_value(PRODUCT_TIER_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_domain
+          select: any_value(DOMAIN_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: app_number_of_workspaces_total
+          select: count(id)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_number_of_workspaces_production
+          select: count(id)
+          from: inputs/app_workspaces
+          where: environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_of_workspaces_development
+          select: count(id)
+          from: inputs/app_workspaces
+          where: environment = 'DEVELOPMENT'
+      - entity_var:
+          name: sf_contracted_event_volume
+          select: any_value(CONTRACTED_EVENT_VOLUME_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_arr
+          select: any_value(CURRENT_ARR_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      # - entity_var:
+      #     name: sf_pipeline_arr
+      #     select: MAX(AMOUNT)
+      #     from: inputs/sf_opportunity
+      #     where: IS_WON = FALSE and STAGE_NAME <> 'Closed Lost' and IS_DELETED = FALSE
+      # - entity_var:
+      #     name: sf_has_poc
+      #     select: any_value(POC_C)
+      #     from: inputs/sf_opportunity
+      #     where: IS_WON = FALSE and STAGE_NAME <> 'Closed Lost' and IS_DELETED = FALSE
+      # - entity_var:
+      #     name: sf_pipeline_stage
+      #     select: any_value(STAGE_NAME)
+      #     from: inputs/sf_opportunity
+      #     where: IS_WON = FALSE and STAGE_NAME <> 'Closed Lost' and IS_DELETED = FALSE
+      - entity_var:
+          name: app_plan_type
+          select: any_value(DISPLAYNAME)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: sf_tam
+          select: any_value(TAM_NAME)
+          from: inputs/sf_account_view
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_csm
+          select: any_value(CSM_NAME)
+          from: inputs/sf_account_view
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_kickoff_date
+          select: any_value(KICKOFF_DATE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_customer_signed_date
+          select: any_value(CUSTOMER_SIGNED_DATE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_go_live_date
+          select: any_value(GO_LIVE_DATE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_customer_health_color
+          select: any_value(CUSTOMER_HEALTH_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_customer_health_score
+          select: max(HEALTH_SCORE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_call_count_last_90
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -90, current_date())
+      - entity_var:
+          name: sf_call_count_last_60
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -60, current_date())
+      - entity_var:
+          name: sf_call_count_last_30
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -30, current_date())
+      - entity_var:
+          name: sf_call_duration_last_90
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -90, current_date())
+      - entity_var:
+          name: sf_call_duration_last_60
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -60, current_date())
+      - entity_var:
+          name: sf_call_duration_last_30
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -30, current_date())
+      - entity_var:
+          name: sf_slack_channel_name
+          select: any_value(SLACK_CHANNEL_NAME_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_internal_slack_channel_name
+          select: any_value(INTERNAL_SLACK_CHANNEL_NAME_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: thena_currently_open_tickets
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'CLOSED' and STATUS <> 'MERGED'
+      - entity_var:
+          name: thena_currently_closed_tickets
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS = 'CLOSED'
+      - entity_var:
+          name: thena_all_tickets_created_last_90_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -90, current_date())
+      - entity_var:
+          name: thena_all_tickets_created_last_60_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -60, current_date())
+      - entity_var:
+          name: thena_all_tickets_created_last_30_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -30, current_date())
+      - entity_var:
+          name: thena_all_tickets_created_last_10_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -10, current_date())
+      - entity_var:
+          name: thena_all_escalated_tickets_created_last_15_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -15, current_date())
+      - entity_var:
+          name: app_number_users_in_organization
+          select: count(USERID)
+          from: inputs/app_user_roles
+      - entity_var:
+          name: app_number_distinct_users_organizations_days_last_7
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_distinct_users_organizations_days_last_30
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_distinct_users_organizations_days_last_90
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          # begins workspace roll ups for both production and development workspaces -- org total
+      - entity_var:
+          name: app_number_destinations_created_rolled_up_total
+          select: sum(app_number_destinations_created)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_enabled_rolled_up_total
+          select: sum(app_number_destinations_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_enabled_rolled_up_total
+          select: sum(app_number_destinations_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_warehouse_connected_enabled_rolled_up_total
+          select: sum(app_number_warehouse_connected_enabled)
+          from: models/rolledUpWorkspaces
+      # begins specific use case vars
+      - entity_var:
+          name: app_number_destinations_connected_marketing_rolled_up_total
+          select: sum(app_number_destinations_connected_marketing)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_analytics_rolled_up_total
+          select: sum(app_number_destinations_connected_analytics)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_advertising_rolled_up_total
+          select: sum(app_number_destinations_connected_advertising)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_crm_rolled_up_total
+          select: sum(app_number_destinations_connected_crm)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_warehouse_rolled_up_total
+          select: sum(app_number_destinations_connected_warehouse)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_snowflake_rolled_up_total
+          select: sum(app_number_destinations_connected_snowflake)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_ga4_rolled_up_total
+          select: sum(app_number_destinations_connected_ga4)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_braze_rolled_up_total
+          select: sum(app_number_destinations_connected_braze)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_amplitude_rolled_up_total
+          select: sum(app_number_destinations_connected_amplitude)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_mixpanel_rolled_up_total
+          select: sum(app_number_destinations_connected_mixpanel)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_customerio_rolled_up_total
+          select: sum(app_number_destinations_connected_customerio)
+          from: models/rolledUpWorkspaces
+      # end specific use case vars
+      - entity_var:
+          name: app_number_transformations_created_rolled_up_total
+          select: sum(app_number_transformations_created)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_created_javascript_rolled_up_total
+          select: sum(app_number_transformations_created_javascript)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_created_python_rolled_up_total
+          select: sum(app_number_transformations_created_python)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_connected_enabled_rolled_up_total
+          select: sum(app_number_transformations_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript_rolled_up_total
+          select: sum(app_number_transformations_connected_enabled_javascript)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python_rolled_up_total
+          select: sum(app_number_transformations_connected_enabled_python)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_created_rolled_up_total
+          select: sum(app_number_sources_created)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_enabled_rolled_up_total
+          select: sum(app_number_sources_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_event_stream_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_webhook_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_reverse_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_shopify_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_tracking_plans_connected_rolled_up_total
+          select: sum(app_number_tracking_plans_connected)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_profiles_connected_rolled_up_total
+          select: sum(app_number_profiles_connected)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_to_date_rolled_up_total
+          select: sum(event_volume_month_to_date)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_1_rolled_up_total
+          select: sum(event_volume_month_1)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_2_rolled_up_total
+          select: sum(event_volume_month_2)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_3_rolled_up_total
+          select: sum(event_volume_month_3)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_4_rolled_up_total
+          select: sum(event_volume_month_4)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_5_rolled_up_total
+          select: sum(event_volume_month_5)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_6_rolled_up_total
+          select: sum(event_volume_month_6)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_7_rolled_up_total
+          select: sum(event_volume_month_7)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_8_rolled_up_total
+          select: sum(event_volume_month_8)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_9_rolled_up_total
+          select: sum(event_volume_month_9)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_10_rolled_up_total
+          select: sum(event_volume_month_10)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_11_rolled_up_total
+          select: sum(event_volume_month_11)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_12_rolled_up_total
+          select: sum(event_volume_month_12)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_days_last_30_rolled_up_total
+          select: sum(event_volume_days_last_30)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_days_last_60_rolled_up_total
+          select: sum(event_volume_days_last_60)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_days_last_90_rolled_up_total
+          select: sum(event_volume_days_last_90)
+          from: models/rolledUpWorkspaces
+      # begins workspace roll up for production
+      - entity_var:
+          name: app_number_destinations_created_rolled_up_production
+          select: sum(app_number_destinations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_destinations_enabled_rolled_up_production
+          select: sum(app_number_destinations_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_destinations_connected_enabled_rolled_up_production
+          select: sum(app_number_destinations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_warehouse_connected_enabled_rolled_up_production
+          select: sum(app_number_warehouse_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_created_rolled_up_production
+          select: sum(app_number_transformations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_created_javascript_rolled_up_production
+          select: sum(app_number_transformations_created_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_created_python_rolled_up_production
+          select: sum(app_number_transformations_created_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_rolled_up_production
+          select: sum(app_number_transformations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript_rolled_up_production
+          select: sum(app_number_transformations_connected_enabled_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python_rolled_up_production
+          select: sum(app_number_transformations_connected_enabled_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_created_rolled_up_production
+          select: sum(app_number_sources_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_enabled_rolled_up_production
+          select: sum(app_number_sources_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_event_stream_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_webhook_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_reverse_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_shopify_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_tracking_plans_connected_rolled_up_production
+          select: sum(app_number_tracking_plans_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_profiles_connected_rolled_up_production
+          select: sum(app_number_profiles_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_to_date_rolled_up_production
+          select: sum(event_volume_month_to_date)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_1_rolled_up_production
+          select: sum(event_volume_month_1)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_2_rolled_up_production
+          select: sum(event_volume_month_2)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_3_rolled_up_production
+          select: sum(event_volume_month_3)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_4_rolled_up_production
+          select: sum(event_volume_month_4)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_5_rolled_up_production
+          select: sum(event_volume_month_5)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_6_rolled_up_production
+          select: sum(event_volume_month_6)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_7_rolled_up_production
+          select: sum(event_volume_month_7)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_8_rolled_up_production
+          select: sum(event_volume_month_8)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_9_rolled_up_production
+          select: sum(event_volume_month_9)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_10_rolled_up_production
+          select: sum(event_volume_month_10)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_11_rolled_up_production
+          select: sum(event_volume_month_11)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_12_rolled_up_production
+          select: sum(event_volume_month_12)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_days_last_30_rolled_up_production
+          select: sum(event_volume_days_last_30)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_days_last_60_rolled_up_production
+          select: sum(event_volume_days_last_60)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_days_last_90_rolled_up_production
+          select: sum(event_volume_days_last_90)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      # begins workspace roll up for just development workspaces
+      - entity_var:
+          name: app_number_destinations_created_rolled_up_development
+          select: sum(app_number_destinations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_destinations_enabled_rolled_up_development
+          select: sum(app_number_destinations_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_destinations_connected_enabled_rolled_up_development
+          select: sum(app_number_destinations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_warehouse_connected_enabled_rolled_up_development
+          select: sum(app_number_warehouse_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_created_rolled_up_development
+          select: sum(app_number_transformations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_created_javascript_rolled_up_development
+          select: sum(app_number_transformations_created_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_created_python_rolled_up_development
+          select: sum(app_number_transformations_created_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_rolled_up_development
+          select: sum(app_number_transformations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript_rolled_up_development
+          select: sum(app_number_transformations_connected_enabled_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python_rolled_up_development
+          select: sum(app_number_transformations_connected_enabled_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_created_rolled_up_development
+          select: sum(app_number_sources_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_enabled_rolled_up_development
+          select: sum(app_number_sources_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_event_stream_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_webhook_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_reverse_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_shopify_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_tracking_plans_connected_rolled_up_development
+          select: sum(app_number_tracking_plans_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_profiles_connected_rolled_up_development
+          select: sum(app_number_profiles_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_to_date_rolled_up_development
+          select: sum(event_volume_month_to_date)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_1_rolled_up_development
+          select: sum(event_volume_month_1)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_2_rolled_up_development
+          select: sum(event_volume_month_2)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_3_rolled_up_development
+          select: sum(event_volume_month_3)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_4_rolled_up_development
+          select: sum(event_volume_month_4)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_5_rolled_up_development
+          select: sum(event_volume_month_5)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_6_rolled_up_development
+          select: sum(event_volume_month_6)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_7_rolled_up_development
+          select: sum(event_volume_month_7)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_8_rolled_up_development
+          select: sum(event_volume_month_8)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_9_rolled_up_development
+          select: sum(event_volume_month_9)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_10_rolled_up_development
+          select: sum(event_volume_month_10)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_11_rolled_up_development
+          select: sum(event_volume_month_11)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_12_rolled_up_development
+          select: sum(event_volume_month_12)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_days_last_30_rolled_up_development
+          select: sum(event_volume_days_last_30)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_days_last_60_rolled_up_development
+          select: sum(event_volume_days_last_60)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_days_last_90_rolled_up_development
+          select: sum(event_volume_days_last_90)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+  - name: account_detail_vars
+    entity_cohort: models/CurrentCustomers
+    vars:
+      - entity_var:
+          name: sf_account_name
+          select: any_value(name)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: app_org_name
+          select: any_value(ORGNAME)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: app_org_id
+          select: any_value(ORGID)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: sf_account_id
+          select: any_value(id)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_account_status
+          select: any_value(ACCOUNT_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_account_sub_status
+          select: any_value(ACCOUNT_SUB_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_plan_type
+          select: any_value(PRODUCT_TIER_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_domain
+          select: any_value(DOMAIN_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: app_number_of_workspaces_total
+          select: count(id)
+          from: inputs/app_workspaces
+      - entity_var:
+          name: app_number_of_workspaces_production
+          select: count(id)
+          from: inputs/app_workspaces
+          where: environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_of_workspaces_development
+          select: count(id)
+          from: inputs/app_workspaces
+          where: environment = 'DEVELOPMENT'
+      - entity_var:
+          name: sf_contracted_event_volume
+          select: any_value(CONTRACTED_EVENT_VOLUME_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_arr
+          select: any_value(CURRENT_ARR_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      # - entity_var:
+      #     name: sf_pipeline_arr
+      #     select: MAX(AMOUNT)
+      #     from: inputs/sf_opportunity
+      #     where: IS_WON = FALSE and STAGE_NAME <> 'Closed Lost' and IS_DELETED = FALSE
+      # - entity_var:
+      #     name: sf_has_poc
+      #     select: any_value(POC_C)
+      #     from: inputs/sf_opportunity
+      #     where: IS_WON = FALSE and STAGE_NAME <> 'Closed Lost' and IS_DELETED = FALSE
+      # - entity_var:
+      #     name: sf_pipeline_stage
+      #     select: any_value(STAGE_NAME)
+      #     from: inputs/sf_opportunity
+      #     where: IS_WON = FALSE and STAGE_NAME <> 'Closed Lost' and IS_DELETED = FALSE
+      - entity_var:
+          name: app_plan_type
+          select: any_value(DISPLAYNAME)
+          from: inputs/app_user_accounts
+      - entity_var:
+          name: sf_tam
+          select: any_value(TAM_NAME)
+          from: inputs/sf_account_view
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_csm
+          select: any_value(CSM_NAME)
+          from: inputs/sf_account_view
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_kickoff_date
+          select: any_value(KICKOFF_DATE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_customer_signed_date
+          select: any_value(CUSTOMER_SIGNED_DATE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_go_live_date
+          select: any_value(GO_LIVE_DATE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_customer_health_color
+          select: any_value(CUSTOMER_HEALTH_STATUS_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_customer_health_score
+          select: max(HEALTH_SCORE_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_call_count_pre_sale
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE < {{CurrentCustomers.Var("sf_customer_signed_date")}}
+      - entity_var:
+          name: sf_call_count_post_sale
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE >= {{CurrentCustomers.Var("sf_customer_signed_date")}}
+      - entity_var:
+          name: sf_call_duration_pre_sale
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE < {{CurrentCustomers.Var("sf_customer_signed_date")}}
+      - entity_var:
+          name: sf_call_duration_post_sale
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE >= {{CurrentCustomers.Var("sf_customer_signed_date")}}
+      - entity_var:
+          name: sf_call_count_last_90
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -90, current_date())
+      - entity_var:
+          name: sf_call_count_last_60
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -60, current_date())
+      - entity_var:
+          name: sf_call_count_last_30
+          select: count(*)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -30, current_date())
+      - entity_var:
+          name: sf_call_duration_last_90
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -90, current_date())
+      - entity_var:
+          name: sf_call_duration_last_60
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -60, current_date())
+      - entity_var:
+          name: sf_call_duration_last_30
+          select: sum(DURATION)
+          from: inputs/gong_call
+          where: DATE > dateadd(day, -30, current_date())
+      - entity_var:
+          name: sf_slack_channel_name
+          select: any_value(SLACK_CHANNEL_NAME_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: sf_internal_slack_channel_name
+          select: any_value(INTERNAL_SLACK_CHANNEL_NAME_C)
+          from: inputs/sf_account
+          where: record_type_id <> '0125x0000006uLeAAI'
+      - entity_var:
+          name: thena_currently_open_tickets
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'CLOSED' and STATUS <> 'MERGED'
+      - entity_var:
+          name: thena_currently_closed_tickets
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS = 'CLOSED'
+      - entity_var:
+          name: thena_all_tickets_created_last_90_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -90, current_date())
+      - entity_var:
+          name: thena_all_tickets_created_last_60_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -60, current_date())
+      - entity_var:
+          name: thena_all_tickets_created_last_30_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -30, current_date())
+      - entity_var:
+          name: thena_all_tickets_created_last_10_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -10, current_date())
+      - entity_var:
+          name: thena_all_escalated_tickets_created_last_15_days
+          select: count(*)
+          from: inputs/thena_tickets
+          where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -15, current_date())
+      - entity_var:
+          name: app_number_users_in_organization
+          select: count(USERID)
+          from: inputs/app_user_roles
+      - entity_var:
+          name: app_number_distinct_users_organizations_days_last_7
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+      - entity_var:
+          name: app_number_distinct_users_organizations_days_last_30
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+      - entity_var:
+          name: app_number_distinct_users_organizations_days_last_90
+          select: count(DISTINCT USER_ID)
+          from: inputs/app_identifies
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          # begins workspace roll ups for both production and development workspaces -- org total
+      - entity_var:
+          name: app_number_destinations_created_rolled_up_total
+          select: sum(app_number_destinations_created)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_enabled_rolled_up_total
+          select: sum(app_number_destinations_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_enabled_rolled_up_total
+          select: sum(app_number_destinations_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_warehouse_connected_enabled_rolled_up_total
+          select: sum(app_number_warehouse_connected_enabled)
+          from: models/rolledUpWorkspaces
+      # begins specific use case vars
+      - entity_var:
+          name: app_number_destinations_connected_marketing_rolled_up_total
+          select: sum(app_number_destinations_connected_marketing)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_analytics_rolled_up_total
+          select: sum(app_number_destinations_connected_analytics)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_advertising_rolled_up_total
+          select: sum(app_number_destinations_connected_advertising)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_crm_rolled_up_total
+          select: sum(app_number_destinations_connected_crm)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_warehouse_rolled_up_total
+          select: sum(app_number_destinations_connected_warehouse)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_snowflake_rolled_up_total
+          select: sum(app_number_destinations_connected_snowflake)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_ga4_rolled_up_total
+          select: sum(app_number_destinations_connected_ga4)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_braze_rolled_up_total
+          select: sum(app_number_destinations_connected_braze)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_amplitude_rolled_up_total
+          select: sum(app_number_destinations_connected_amplitude)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_mixpanel_rolled_up_total
+          select: sum(app_number_destinations_connected_mixpanel)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_destinations_connected_customerio_rolled_up_total
+          select: sum(app_number_destinations_connected_customerio)
+          from: models/rolledUpWorkspaces
+      # end specific use case vars
+      - entity_var:
+          name: app_number_transformations_created_rolled_up_total
+          select: sum(app_number_transformations_created)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_created_javascript_rolled_up_total
+          select: sum(app_number_transformations_created_javascript)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_created_python_rolled_up_total
+          select: sum(app_number_transformations_created_python)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_connected_enabled_rolled_up_total
+          select: sum(app_number_transformations_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript_rolled_up_total
+          select: sum(app_number_transformations_connected_enabled_javascript)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python_rolled_up_total
+          select: sum(app_number_transformations_connected_enabled_python)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_created_rolled_up_total
+          select: sum(app_number_sources_created)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_enabled_rolled_up_total
+          select: sum(app_number_sources_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_event_stream_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_webhook_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_reverse_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled_rolled_up_total
+          select: sum(app_number_sources_shopify_connected_enabled)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_tracking_plans_connected_rolled_up_total
+          select: sum(app_number_tracking_plans_connected)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: app_number_profiles_connected_rolled_up_total
+          select: sum(app_number_profiles_connected)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_to_date_rolled_up_total
+          select: sum(event_volume_month_to_date)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_1_rolled_up_total
+          select: sum(event_volume_month_1)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_2_rolled_up_total
+          select: sum(event_volume_month_2)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_3_rolled_up_total
+          select: sum(event_volume_month_3)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_4_rolled_up_total
+          select: sum(event_volume_month_4)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_5_rolled_up_total
+          select: sum(event_volume_month_5)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_6_rolled_up_total
+          select: sum(event_volume_month_6)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_7_rolled_up_total
+          select: sum(event_volume_month_7)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_8_rolled_up_total
+          select: sum(event_volume_month_8)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_9_rolled_up_total
+          select: sum(event_volume_month_9)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_10_rolled_up_total
+          select: sum(event_volume_month_10)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_11_rolled_up_total
+          select: sum(event_volume_month_11)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_month_12_rolled_up_total
+          select: sum(event_volume_month_12)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_days_last_30_rolled_up_total
+          select: sum(event_volume_days_last_30)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_days_last_60_rolled_up_total
+          select: sum(event_volume_days_last_60)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_days_last_90_rolled_up_total
+          select: sum(event_volume_days_last_90)
+          from: models/rolledUpWorkspaces
+      - entity_var:
+          name: event_volume_last_90_day_average_contract_utilization
+          select: CASE WHEN ({{CurrentCustomers.Var("sf_contracted_event_volume")}} is not null AND {{CurrentCustomers.Var("sf_contracted_event_volume")}} <> 0) THEN (ZEROIFNULL({{CurrentCustomers.Var("event_volume_days_last_90_rolled_up_total")}}) / 3) / ({{CurrentCustomers.Var("sf_contracted_event_volume")}} * 1000000) ELSE 0 END
+      # begins workspace roll up for production
+      - entity_var:
+          name: app_number_destinations_created_rolled_up_production
+          select: sum(app_number_destinations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_destinations_enabled_rolled_up_production
+          select: sum(app_number_destinations_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_destinations_connected_enabled_rolled_up_production
+          select: sum(app_number_destinations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_warehouse_connected_enabled_rolled_up_production
+          select: sum(app_number_warehouse_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_created_rolled_up_production
+          select: sum(app_number_transformations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_created_javascript_rolled_up_production
+          select: sum(app_number_transformations_created_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_created_python_rolled_up_production
+          select: sum(app_number_transformations_created_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_rolled_up_production
+          select: sum(app_number_transformations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript_rolled_up_production
+          select: sum(app_number_transformations_connected_enabled_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python_rolled_up_production
+          select: sum(app_number_transformations_connected_enabled_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_created_rolled_up_production
+          select: sum(app_number_sources_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_enabled_rolled_up_production
+          select: sum(app_number_sources_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_event_stream_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_webhook_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_reverse_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled_rolled_up_production
+          select: sum(app_number_sources_shopify_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_tracking_plans_connected_rolled_up_production
+          select: sum(app_number_tracking_plans_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: app_number_profiles_connected_rolled_up_production
+          select: sum(app_number_profiles_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_to_date_rolled_up_production
+          select: sum(event_volume_month_to_date)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_1_rolled_up_production
+          select: sum(event_volume_month_1)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_2_rolled_up_production
+          select: sum(event_volume_month_2)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_3_rolled_up_production
+          select: sum(event_volume_month_3)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_4_rolled_up_production
+          select: sum(event_volume_month_4)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_5_rolled_up_production
+          select: sum(event_volume_month_5)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_6_rolled_up_production
+          select: sum(event_volume_month_6)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_7_rolled_up_production
+          select: sum(event_volume_month_7)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_8_rolled_up_production
+          select: sum(event_volume_month_8)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_9_rolled_up_production
+          select: sum(event_volume_month_9)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_10_rolled_up_production
+          select: sum(event_volume_month_10)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_11_rolled_up_production
+          select: sum(event_volume_month_11)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_month_12_rolled_up_production
+          select: sum(event_volume_month_12)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_days_last_30_rolled_up_production
+          select: sum(event_volume_days_last_30)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_days_last_60_rolled_up_production
+          select: sum(event_volume_days_last_60)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      - entity_var:
+          name: event_volume_days_last_90_rolled_up_production
+          select: sum(event_volume_days_last_90)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'PRODUCTION'
+      # begins workspace roll up for just development workspaces
+      - entity_var:
+          name: app_number_destinations_created_rolled_up_development
+          select: sum(app_number_destinations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_destinations_enabled_rolled_up_development
+          select: sum(app_number_destinations_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_destinations_connected_enabled_rolled_up_development
+          select: sum(app_number_destinations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_warehouse_connected_enabled_rolled_up_development
+          select: sum(app_number_warehouse_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_created_rolled_up_development
+          select: sum(app_number_transformations_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_created_javascript_rolled_up_development
+          select: sum(app_number_transformations_created_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_created_python_rolled_up_development
+          select: sum(app_number_transformations_created_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_rolled_up_development
+          select: sum(app_number_transformations_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_javascript_rolled_up_development
+          select: sum(app_number_transformations_connected_enabled_javascript)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_transformations_connected_enabled_python_rolled_up_development
+          select: sum(app_number_transformations_connected_enabled_python)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_created_rolled_up_development
+          select: sum(app_number_sources_created)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_enabled_rolled_up_development
+          select: sum(app_number_sources_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_event_stream_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_event_stream_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_webhook_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_webhook_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_reverse_etl_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_reverse_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_etl_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_etl_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_sources_shopify_connected_enabled_rolled_up_development
+          select: sum(app_number_sources_shopify_connected_enabled)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_tracking_plans_connected_rolled_up_development
+          select: sum(app_number_tracking_plans_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: app_number_profiles_connected_rolled_up_development
+          select: sum(app_number_profiles_connected)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_to_date_rolled_up_development
+          select: sum(event_volume_month_to_date)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_1_rolled_up_development
+          select: sum(event_volume_month_1)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_2_rolled_up_development
+          select: sum(event_volume_month_2)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_3_rolled_up_development
+          select: sum(event_volume_month_3)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_4_rolled_up_development
+          select: sum(event_volume_month_4)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_5_rolled_up_development
+          select: sum(event_volume_month_5)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_6_rolled_up_development
+          select: sum(event_volume_month_6)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_7_rolled_up_development
+          select: sum(event_volume_month_7)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_8_rolled_up_development
+          select: sum(event_volume_month_8)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_9_rolled_up_development
+          select: sum(event_volume_month_9)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_10_rolled_up_development
+          select: sum(event_volume_month_10)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_11_rolled_up_development
+          select: sum(event_volume_month_11)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_month_12_rolled_up_development
+          select: sum(event_volume_month_12)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_days_last_30_rolled_up_development
+          select: sum(event_volume_days_last_30)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_days_last_60_rolled_up_development
+          select: sum(event_volume_days_last_60)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: event_volume_days_last_90_rolled_up_development
+          select: sum(event_volume_days_last_90)
+          from: models/rolledUpWorkspaces
+          where: app_workspace_environment = 'DEVELOPMENT'
+      - entity_var:
+          name: product_health_score
+          select: | 
+            (CASE WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) <= 0.4 OR {{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }} is null THEN 0 
+            WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) < 0.6 THEN 2
+            WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) < 0.8 THEN 4
+            WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) >= 0.8 THEN 5 
+            END * 0.2) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_event_stream_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_event_stream_connected_enabled_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_event_stream_connected_enabled_rolled_up_production") }}*1) >= 1 THEN 5
+            END * 0.1) +
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_reverse_etl_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_reverse_etl_connected_enabled_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_reverse_etl_connected_enabled_rolled_up_production") }}*1) >= 1 THEN 5
+            END * 0.1) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_tracking_plans_connected_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_tracking_plans_connected_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_tracking_plans_connected_rolled_up_production") }}*1) >= 1 THEN 5
+            END * 0.04) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }}*1) < 2 THEN 3
+            WHEN ({{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }}*1) >= 2 THEN 5
+            END * 0.04) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) <= 0 OR {{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) >= 5 THEN 5
+            END * 0.05) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("SF_CALL_COUNT_LAST_30") }}*1) <= 0 OR {{ CurrentCustomers.Var("SF_CALL_COUNT_LAST_30") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("SF_CALL_COUNT_LAST_30") }}*1) >= 1 THEN 5
+            END * 0.06) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }}*1) <= 0 OR {{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }}*1) < 3 THEN 3
+            WHEN ({{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }}*1) >= 3 THEN 5
+            END * 0.08) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_profiles_connected_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_profiles_connected_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_profiles_connected_rolled_up_production") }}*1) >= 1 THEN 5
+            END * 0.12) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_etl_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_etl_connected_enabled_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_etl_connected_enabled_rolled_up_production") }}*1) >= 1 THEN 5
+            END * 0.04) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) >= 5 THEN 5
+            END * 0.04) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) >= 5 THEN 5
+            END * 0.08) + 
+            (CASE WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_users_in_organization") }} is null THEN 0
+            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) >= 5 THEN 5
+            END * 0.05)

@@ -1,0 +1,2 @@
+user_id, anonymous_id, email, timestamp
+'1','b','e@gmail.com',{% if warehouse.DatabaseType() == "bigquery" %}TIMESTAMP('2024-02-28 14:19:14 UTC'){% else %}'2024-02-28T14:19:14Z'{% endif %}

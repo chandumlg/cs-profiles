@@ -1,0 +1,256 @@
+# This is a sample file, for detailed reference see: https://www.rudderstack.com/docs/profiles/get-started/profile-builder/
+inputs:
+  ### ACCOUNTS ###
+  - name: app_user_accounts
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.PUBLIC.ACCOUNT_VIEW_TABLE
+      occurred_at_col: CREATEDAT
+      ids:
+        - select: ORGID
+          type: organization_id
+          entity: account
+  - name: sf_account
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: RUDDER_SALESFORCE.PUBLIC.SF_ACCOUNT
+      occurred_at_col: CREATED_DATE
+      ids:
+        - select: case when "IS_DELETED" = 'FALSE' then "ORG_ID_C" end
+          type: organization_id
+          entity: account
+        - select: case when account_status_c is null then null when record_type_id = '0125x0000006uLeAAI' then null when is_deleted = FALSE then "ID" end
+          type: salesforce_id
+          entity: account
+        - select: CASE WHEN SLACK_CHANNEL_NAME_C LIKE '#%' THEN SUBSTR(SLACK_CHANNEL_NAME_C, 2) WHEN SLACK_CHANNEL_NAME_C LIKE '@%' THEN SUBSTR(SLACK_CHANNEL_NAME_C,2) ELSE SLACK_CHANNEL_NAME_C END 
+          type: slack_channel_name
+          entity: account
+  - name: sf_account_view
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.PUBLIC.SALESFORCE_VIEW_TABLE
+      occurred_at_col: CREATED_DATE
+      ids:
+        - select: ACCOUNT_ID
+          type: salesforce_id
+          entity: account
+  - name: gong_call
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.PUBLIC.GONG_CALLS
+      occurred_at_col: DATE
+      ids:
+        - select: SALESFORCE_ID
+          type: salesforce_id
+          entity: account
+  - name: thena_tickets
+    contract:
+      is_optional: false
+      is_event_stream: true
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.THENA_TICKET_EVENT_STREAM.UNION_UPDATED_MERGED_TICKETS
+      occurred_at_col: CREATED_AT
+      ids:
+        - select: CHANNEL_NAME
+          type: slack_channel_name
+          entity: account
+  - name: app_identifies
+    contract:
+      is_optional: false
+      is_event_stream: true
+      with_entity_ids:
+        - account
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_WEBAPP_DATA.RUDDERWEBAPP.IDENTIFIES
+      occurred_at_col: ORIGINAL_TIMESTAMP
+      ids:
+        - select: ORGANIZATION_ID
+          type: organization_id
+          entity: account
+        - select: WORKSPACES_ID
+          type: workspace_id
+          entity: workspace
+  - name: app_user_roles
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.ORGANIZATION_USER_ROLES
+      occurred_at_col: createdat
+      ids:
+        - select: ORGANIZATIONID
+          type: organization_id
+          entity: account
+          ### WORKSPACES ###
+  - name: app_workspaces
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+        - account
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.WORKSPACES
+      occurred_at_col: createdat
+      ids:
+        - select: ID
+          type: workspace_id
+          entity: workspace
+        - select: ORGANIZATIONID
+          type: organization_id
+          entity: account
+  - name: app_sources
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.SOURCES
+      occurred_at_col: createdat
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: app_destinations
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.DESTINATIONS
+      occurred_at_col: createdat
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: app_transformations
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.TRANSFORMATIONS
+      occurred_at_col: createdat
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: app_cs_connections
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.PUBLIC.CUSTOMER_SUCCESS_CONNECTIONS
+      occurred_at_col: SOURCE_CREATED_AT
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: monthly_event_volume
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.PUBLIC.CUSTOMER_LIFETIME_MONTHLY_EVENT_VOLUME
+      occurred_at_col: REPORT_DATE
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: daily_event_volume
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.PUBLIC.CUSTOMER_LIFETIME_DAILY_EVENT_VOLUME
+      occurred_at_col: REPORT_DATE
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: app_tracks
+    contract:
+      is_optional: false
+      is_event_stream: true
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_WEBAPP_DATA.RUDDERWEBAPP.TRACKS
+      occurred_at_col: ORIGINAL_TIMESTAMP
+      ids:
+        - select: CONTEXT_TRAITS_WORKSPACE_ID
+          type: workspace_id
+          entity: workspace
+  - name: app_tracking_plans
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.DG_SOURCE_TRACKINGPLAN_CONFIGS
+      occurred_at_col: CREATEDAT
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace
+  - name: app_profiles
+    contract:
+      is_optional: false
+      is_event_stream: false
+      with_entity_ids:
+        - workspace
+      with_columns: []
+    app_defaults:
+      table: RUDDER_TEST_EVENTS.PPW_PUBLIC.WHT_PROJECTS
+      occurred_at_col: CREATEDAT
+      ids:
+        - select: WORKSPACEID
+          type: workspace_id
+          entity: workspace

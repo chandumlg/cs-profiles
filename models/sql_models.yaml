@@ -1,0 +1,16 @@
+models:
+  - name: rolledUpWorkspaces
+    model_type: sql_template
+    model_spec:
+      validity_time: 24h
+      materialization:
+        run_type: discrete
+      single_sql: |
+        {%- with WorkspaceFeature = this.DeRef("models/workspace_profile") -%}
+          select * from {{WorkspaceFeature}}
+        {%- endwith -%}
+      ids:
+        - select: "APP_ORGANIZATION_ID"
+          type: organization_id
+          entity: account
+          to_default_stitcher: true
