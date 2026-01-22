@@ -1,43 +1,41 @@
 # Project name
 name: customer_success_360
 # Project's yaml schema version
-schema_version: 63
+schema_version: 96
+allow_beta: true
 # WH Connection to use.
-connection: CS_Customers
+connection: schanduprod
 # Model folders to use.
 model_folders:
-  - models
+    - models
 # Entities in this project and their ids.
 
 # The id types are inherited from the library package listed below.
 #  To add / extend filters, check out the section on extends in id_types in documentation.
 entities:
-  - name: workspace
-    id_stitcher: models/workspace_id_graph
-    id_types:
-      - workspace_id
-
-  - name: account
-    id_stitcher: models/account_id_graph
-    id_types:
-      - organization_id
-      - salesforce_id
-      - slack_channel_name
-
+    - name: workspace
+      id_stitcher: models/workspace_id_graph
+      id_types:
+        - workspace_id
+    - name: account
+      id_stitcher: models/account_id_graph
+      id_types:
+        - organization_id
+        - salesforce_id
+        - slack_channel_name
 id_types:
-  - name: workspace_id
-  - name: organization_id
-    filters:
-      - type: exclude
-        value: ""
-  - name: salesforce_id
-    filters:
-      - type: exclude
-        value: ""
-  - name: slack_channel_name
+    - name: workspace_id
+    - name: organization_id
+      filters:
+        - type: exclude
+          value: ""
+    - name: salesforce_id
+      filters:
+        - type: exclude
+          value: ""
+    - name: slack_channel_name
 
-python_requirements:
-  - profiles-rudderstack==0.23.2
+retention_period: 720h0m0s
 
 # lib packages can be imported in project signifying that this project inherits its properties from there
 # packages:

@@ -34,13 +34,13 @@ models:
             SELECT * FROM {{ tickets_delta }}
           ),
           latest_tickets AS (
-            SELECT 
+            SELECT
               *,
-              ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME, TICKET_ID 
+              ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME, TICKET_ID
                                 ORDER BY CREATED_AT DESC) AS rn
             FROM all_tickets
           )
-          SELECT 
+          SELECT
             CHANNEL_NAME,
             TICKET_ID,
             STATUS,
@@ -52,13 +52,13 @@ models:
         {% else %}
           -- Full refresh mode: process all tickets
           WITH latest_tickets AS (
-            SELECT 
+            SELECT
               *,
-              ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME, TICKET_ID 
+              ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME, TICKET_ID
                                 ORDER BY CREATED_AT DESC) AS rn
             FROM {{ tickets_full }}
           )
-          SELECT 
+          SELECT
             CHANNEL_NAME,
             TICKET_ID,
             STATUS,

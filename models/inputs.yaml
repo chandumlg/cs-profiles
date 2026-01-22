@@ -32,7 +32,7 @@ inputs:
         - select: case when account_status_c is null then null when record_type_id = '0125x0000006uLeAAI' then null when is_deleted = FALSE then "ID" end
           type: salesforce_id
           entity: account
-        - select: CASE WHEN SLACK_CHANNEL_NAME_C LIKE '#%' THEN SUBSTR(SLACK_CHANNEL_NAME_C, 2) WHEN SLACK_CHANNEL_NAME_C LIKE '@%' THEN SUBSTR(SLACK_CHANNEL_NAME_C,2) ELSE SLACK_CHANNEL_NAME_C END 
+        - select: CASE WHEN SLACK_CHANNEL_NAME_C LIKE '#%' THEN SUBSTR(SLACK_CHANNEL_NAME_C, 2) WHEN SLACK_CHANNEL_NAME_C LIKE '@%' THEN SUBSTR(SLACK_CHANNEL_NAME_C,2) ELSE SLACK_CHANNEL_NAME_C END
           type: slack_channel_name
           entity: account
   - name: sf_account_view
