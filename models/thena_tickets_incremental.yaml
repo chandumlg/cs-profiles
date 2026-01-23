@@ -8,7 +8,6 @@ models:
       occurred_at_col: CREATED_AT
       materialization:
         output_type: table
-        run_type: incremental
       single_sql: |
         {%- set lastThis = this.DeRef(
               pre_existing=true,
@@ -69,11 +68,7 @@ models:
           WHERE rn = 1
         {% endif %}
       contract:
-        is_event_stream: true
         is_append_only: false
-        with_entity_ids:
-          - account
-        with_columns: []
       ids:
         - select: CHANNEL_NAME
           type: slack_channel_name
