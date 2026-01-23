@@ -9,18 +9,11 @@ models:
       materialization:
         output_type: table
       single_sql: |
-        {%- set lastThis = this.DeRef(
-              pre_existing=true,
-              dependency="optional",
-              checkpoint_name="baseline") -%}
+        {%- set lastThis = this.DeRef(pre_existing=true, dependency="optional", checkpoint_name="baseline") -%}
 
-        {% set tickets_delta = this.DeRef("inputs/thena_tickets/incr_delta_tbl",
-                                          dependency="coercive",
-                                          baseline_name="baseline",
-                                          prereqs=[lastThis]) %}
+        {% set tickets_delta = this.DeRef("inputs/thena_tickets/incr_delta_tbl", dependency="coercive", baseline_name="baseline", prereqs=[lastThis]) %}
 
-        {% set tickets_full = this.DeRef("inputs/thena_tickets",
-                                         prereqs=[tickets_delta.Except()]) %}
+        {% set tickets_full = this.DeRef("inputs/thena_tickets", prereqs=[tickets_delta.Except()]) %}
 
         {# All DeRef before this line. #}
 
