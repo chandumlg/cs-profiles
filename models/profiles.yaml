@@ -319,7 +319,7 @@ var_groups:
           from: inputs/app_workspaces
       - entity_var:
           name: app_event_storage
-          select: CASE WHEN {{workspace.Var("app_rudder_storage")}} = 'TRUE' THEN 'RUDDER_STORAGE' WHEN {{workspace.Var("app_self_storage")}} = 'TRUE' THEN 'SELF_STORAGE' ELSE 'NO_STORAGE' END
+          select: CASE WHEN {{workspace.app_rudder_storage}} = 'TRUE' THEN 'RUDDER_STORAGE' WHEN {{workspace.app_self_storage}} = 'TRUE' THEN 'SELF_STORAGE' ELSE 'NO_STORAGE' END
       - entity_var:
           name: app_data_residency
           select: any_value(DEFAULTREGION)
@@ -331,174 +331,174 @@ var_groups:
           where: _SDC_DELETED_AT is null
       - entity_var:
           name: event_volume_month_to_date
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = date_trunc('month', current_date())
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}})
       - entity_var:
           name: event_volume_month_1
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-1)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '1 month'
       - entity_var:
           name: event_volume_month_2
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-2)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '2 month'
       - entity_var:
           name: event_volume_month_3
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-3)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '3 month'
       - entity_var:
           name: event_volume_month_4
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-4)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '4 month'
       - entity_var:
           name: event_volume_month_5
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-5)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '5 month'
       - entity_var:
           name: event_volume_month_6
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-6)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '6 month'
       - entity_var:
           name: event_volume_month_7
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-7)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '7 month'
       - entity_var:
           name: event_volume_month_8
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-8)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '8 month'
       - entity_var:
           name: event_volume_month_9
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-9)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '9 month'
       - entity_var:
           name: event_volume_month_10
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-10)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '10 month'
       - entity_var:
           name: event_volume_month_11
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-11)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '11 month'
       - entity_var:
           name: event_volume_month_12
-          select: ZEROIFNULL(AVG(MONTHLY_TOTAL))
+          select: COALESCE(AVG(MONTHLY_TOTAL), 0)
           from: inputs/monthly_event_volume
-          where: REPORT_DATE = add_months(date_trunc('month', current_date()),-12)
+          where: REPORT_DATE = DATE_TRUNC('month', {{end_time_sql}}) - INTERVAL '12 month'
       - entity_var:
           name: event_volume_days_last_30
-          select: ZEROIFNULL(SUM(DAILY_TOTAL))
+          select: COALESCE(SUM(DAILY_TOTAL), 0)
           from: inputs/daily_event_volume
-          where: REPORT_DATE >= DATEADD(day, -30, CURRENT_DATE())
+          where: REPORT_DATE >= {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: event_volume_days_last_60
-          select: ZEROIFNULL(SUM(DAILY_TOTAL))
+          select: COALESCE(SUM(DAILY_TOTAL), 0)
           from: inputs/daily_event_volume
-          where: REPORT_DATE >= DATEADD(day, -60, CURRENT_DATE())
+          where: REPORT_DATE >= {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: event_volume_days_last_90
-          select: ZEROIFNULL(SUM(DAILY_TOTAL))
+          select: COALESCE(SUM(DAILY_TOTAL), 0)
           from: inputs/daily_event_volume
-          where: REPORT_DATE >= DATEADD(day, -90, CURRENT_DATE())
+          where: REPORT_DATE >= {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_transformations_created_days_last_7
           select: count(*)
           from: inputs/app_transformations
-          where: createdat > dateadd(day, -7, current_date())
+          where: createdat > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_transformations_created_days_last_30
           select: count(*)
           from: inputs/app_transformations
-          where: createdat > dateadd(day, -30, current_date())
+          where: createdat > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_transformations_created_days_last_90
           select: count(*)
           from: inputs/app_transformations
-          where: createdat > dateadd(day, -90, current_date())
+          where: createdat > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_destinations_created_days_last_7
           select: count(*)
           from: inputs/app_destinations
-          where: DELETED = 'FALSE' and createdat > dateadd(day, -7, current_date())
+          where: DELETED = 'FALSE' and createdat > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_destinations_created_days_last_30
           select: count(*)
           from: inputs/app_destinations
-          where: DELETED = 'FALSE' and createdat > dateadd(day, -30, current_date())
+          where: DELETED = 'FALSE' and createdat > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_destinations_created_days_last_90
           select: count(*)
           from: inputs/app_destinations
-          where: DELETED = 'FALSE' and createdat > dateadd(day, -90, current_date())
+          where: DELETED = 'FALSE' and createdat > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_sources_created_days_last_7
           select: count(*)
           from: inputs/app_sources
-          where: DELETED = 'FALSE' and createdat > dateadd(day, -7, current_date())
+          where: DELETED = 'FALSE' and createdat > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_sources_created_days_last_30
           select: count(*)
           from: inputs/app_sources
-          where: DELETED = 'FALSE' and createdat > dateadd(day, -30, current_date())
+          where: DELETED = 'FALSE' and createdat > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_sources_created_days_last_90
           select: count(*)
           from: inputs/app_sources
-          where: DELETED = 'FALSE' and createdat > dateadd(day, -90, current_date())
+          where: DELETED = 'FALSE' and createdat > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_distinct_users_workspaces_days_last_7
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_distinct_users_workspaces_days_last_30
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_distinct_users_workspaces_days_last_90
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_destinations_deleted_days_last_7
           select: count(*)
           from: inputs/app_tracks
-          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_destinations_deleted_days_last_30
           select: count(*)
           from: inputs/app_tracks
-          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_destinations_deleted_days_last_90
           select: count(*)
           from: inputs/app_tracks
-          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_sources_deleted_days_last_7
           select: count(*)
           from: inputs/app_tracks
-          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_sources_deleted_days_last_30
           select: count(*)
           from: inputs/app_tracks
-          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_sources_deleted_days_last_90
           select: count(*)
           from: inputs/app_tracks
-          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
   - name: account_basic_vars
     entity_cohort: account/all
     vars:
@@ -658,32 +658,32 @@ var_groups:
           name: sf_call_count_last_90
           select: count(*)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -90, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: sf_call_count_last_60
           select: count(*)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -60, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: sf_call_count_last_30
           select: count(*)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -30, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: sf_call_duration_last_90
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -90, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: sf_call_duration_last_60
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -60, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: sf_call_duration_last_30
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -30, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: sf_slack_channel_name
           select: any_value(SLACK_CHANNEL_NAME_C)
@@ -708,27 +708,27 @@ var_groups:
           name: thena_all_tickets_created_last_90_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -90, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: thena_all_tickets_created_last_60_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -60, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: thena_all_tickets_created_last_30_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -30, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: thena_all_tickets_created_last_10_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -10, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '10 day'
       - entity_var:
           name: thena_all_escalated_tickets_created_last_15_days
           select: count(*)
           from: models/thena_tickets_history
-          where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -15, current_date())
+          where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '15 day'
       - entity_var:
           name: app_number_users_in_organization
           select: count(USERID)
@@ -737,17 +737,17 @@ var_groups:
           name: app_number_distinct_users_organizations_days_last_7
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_30
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_90
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
           # begins workspace roll ups for both production and development workspaces -- org total
       - entity_var:
           name: app_number_destinations_created_rolled_up_total
@@ -1424,52 +1424,52 @@ var_groups:
           name: sf_call_count_pre_sale
           select: count(*)
           from: inputs/gong_call
-          where: DATE < {{CurrentCustomers.Var("sf_customer_signed_date")}}
+          where: DATE < {{CurrentCustomers.sf_customer_signed_date}}
       - entity_var:
           name: sf_call_count_post_sale
           select: count(*)
           from: inputs/gong_call
-          where: DATE >= {{CurrentCustomers.Var("sf_customer_signed_date")}}
+          where: DATE >= {{CurrentCustomers.sf_customer_signed_date}}
       - entity_var:
           name: sf_call_duration_pre_sale
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE < {{CurrentCustomers.Var("sf_customer_signed_date")}}
+          where: DATE < {{CurrentCustomers.sf_customer_signed_date}}
       - entity_var:
           name: sf_call_duration_post_sale
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE >= {{CurrentCustomers.Var("sf_customer_signed_date")}}
+          where: DATE >= {{CurrentCustomers.sf_customer_signed_date}}
       - entity_var:
           name: sf_call_count_last_90
           select: count(*)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -90, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: sf_call_count_last_60
           select: count(*)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -60, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: sf_call_count_last_30
           select: count(*)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -30, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: sf_call_duration_last_90
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -90, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: sf_call_duration_last_60
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -60, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: sf_call_duration_last_30
           select: sum(DURATION)
           from: inputs/gong_call
-          where: DATE > dateadd(day, -30, current_date())
+          where: DATE > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: sf_slack_channel_name
           select: any_value(SLACK_CHANNEL_NAME_C)
@@ -1494,27 +1494,27 @@ var_groups:
           name: thena_all_tickets_created_last_90_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -90, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: thena_all_tickets_created_last_60_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -60, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: thena_all_tickets_created_last_30_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -30, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: thena_all_tickets_created_last_10_days
           select: count(*)
           from: models/thena_tickets_history
-          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -10, current_date())
+          where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '10 day'
       - entity_var:
           name: thena_all_escalated_tickets_created_last_15_days
           select: count(*)
           from: models/thena_tickets_history
-          where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > dateadd(day, -15, current_date())
+          where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '15 day'
       - entity_var:
           name: app_number_users_in_organization
           select: count(USERID)
@@ -1523,17 +1523,17 @@ var_groups:
           name: app_number_distinct_users_organizations_days_last_7
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -7, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_30
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -30, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_90
           select: count(DISTINCT USER_ID)
           from: inputs/app_identifies
-          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > dateadd(day, -90, current_date())
+          where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
           # begins workspace roll ups for both production and development workspaces -- org total
       - entity_var:
           name: app_number_destinations_created_rolled_up_total
@@ -1727,7 +1727,7 @@ var_groups:
           from: models/rolledUpWorkspaces
       - entity_var:
           name: event_volume_last_90_day_average_contract_utilization
-          select: CASE WHEN ({{CurrentCustomers.Var("sf_contracted_event_volume")}} is not null AND {{CurrentCustomers.Var("sf_contracted_event_volume")}} <> 0) THEN (ZEROIFNULL({{CurrentCustomers.Var("event_volume_days_last_90_rolled_up_total")}}) / 3) / ({{CurrentCustomers.Var("sf_contracted_event_volume")}} * 1000000) ELSE 0 END
+          select: CASE WHEN ({{CurrentCustomers.sf_contracted_event_volume}} is not null AND {{CurrentCustomers.sf_contracted_event_volume}} <> 0) THEN (COALESCE({{CurrentCustomers.event_volume_days_last_90_rolled_up_total}}, 0) / 3) / ({{CurrentCustomers.sf_contracted_event_volume}} * 1000000) ELSE 0 END
       # begins workspace roll up for production
       - entity_var:
           name: app_number_destinations_created_rolled_up_production
@@ -2093,62 +2093,62 @@ var_groups:
       - entity_var:
           name: product_health_score
           select: |
-            (CASE WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) <= 0.4 OR {{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) < 0.6 THEN 2
-            WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) < 0.8 THEN 4
-            WHEN ({{ CurrentCustomers.Var("event_volume_last_90_day_average_contract_utilization") }}*1) >= 0.8 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.event_volume_last_90_day_average_contract_utilization }}*1) <= 0.4 OR {{ CurrentCustomers.event_volume_last_90_day_average_contract_utilization }} is null THEN 0
+            WHEN ({{ CurrentCustomers.event_volume_last_90_day_average_contract_utilization }}*1) < 0.6 THEN 2
+            WHEN ({{ CurrentCustomers.event_volume_last_90_day_average_contract_utilization }}*1) < 0.8 THEN 4
+            WHEN ({{ CurrentCustomers.event_volume_last_90_day_average_contract_utilization }}*1) >= 0.8 THEN 5
             END * 0.2) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_event_stream_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_event_stream_connected_enabled_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_event_stream_connected_enabled_rolled_up_production") }}*1) >= 1 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_sources_event_stream_connected_enabled_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_sources_event_stream_connected_enabled_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_sources_event_stream_connected_enabled_rolled_up_production }}*1) >= 1 THEN 5
             END * 0.1) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_reverse_etl_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_reverse_etl_connected_enabled_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_reverse_etl_connected_enabled_rolled_up_production") }}*1) >= 1 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_sources_reverse_etl_connected_enabled_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_sources_reverse_etl_connected_enabled_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_sources_reverse_etl_connected_enabled_rolled_up_production }}*1) >= 1 THEN 5
             END * 0.1) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_tracking_plans_connected_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_tracking_plans_connected_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_tracking_plans_connected_rolled_up_production") }}*1) >= 1 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_tracking_plans_connected_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_tracking_plans_connected_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_tracking_plans_connected_rolled_up_production }}*1) >= 1 THEN 5
             END * 0.04) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }}*1) < 2 THEN 3
-            WHEN ({{ CurrentCustomers.Var("app_number_distinct_users_organizations_days_last_30") }}*1) >= 2 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_distinct_users_organizations_days_last_30 }}*1) <= 0 OR {{ CurrentCustomers.app_number_distinct_users_organizations_days_last_30 }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_distinct_users_organizations_days_last_30 }}*1) < 2 THEN 3
+            WHEN ({{ CurrentCustomers.app_number_distinct_users_organizations_days_last_30 }}*1) >= 2 THEN 5
             END * 0.04) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) <= 0 OR {{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 2 THEN 1
-            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 3 THEN 2
-            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 4 THEN 3
-            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) < 5 THEN 4
-            WHEN ({{ CurrentCustomers.Var("app_number_destinations_connected_enabled_rolled_up_production") }}*0.5) >= 5 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }}*0.5) <= 0 OR {{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }}*0.5) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }}*0.5) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }}*0.5) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }}*0.5) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.app_number_destinations_connected_enabled_rolled_up_production }}*0.5) >= 5 THEN 5
             END * 0.05) +
-            (CASE WHEN ({{ CurrentCustomers.Var("sf_call_count_last_30") }}*1) <= 0 OR {{ CurrentCustomers.Var("sf_call_count_last_30") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("sf_call_count_last_30") }}*1) >= 1 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.sf_call_count_last_30 }}*1) <= 0 OR {{ CurrentCustomers.sf_call_count_last_30 }} is null THEN 0
+            WHEN ({{ CurrentCustomers.sf_call_count_last_30 }}*1) >= 1 THEN 5
             END * 0.06) +
-            (CASE WHEN ({{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }}*1) <= 0 OR {{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }}*1) < 3 THEN 3
-            WHEN ({{ CurrentCustomers.Var("thena_all_tickets_created_last_30_days") }}*1) >= 3 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.thena_all_tickets_created_last_30_days }}*1) <= 0 OR {{ CurrentCustomers.thena_all_tickets_created_last_30_days }} is null THEN 0
+            WHEN ({{ CurrentCustomers.thena_all_tickets_created_last_30_days }}*1) < 3 THEN 3
+            WHEN ({{ CurrentCustomers.thena_all_tickets_created_last_30_days }}*1) >= 3 THEN 5
             END * 0.08) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_profiles_connected_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_profiles_connected_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_profiles_connected_rolled_up_production") }}*1) >= 1 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_profiles_connected_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_profiles_connected_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_profiles_connected_rolled_up_production }}*1) >= 1 THEN 5
             END * 0.12) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_etl_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_etl_connected_enabled_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_etl_connected_enabled_rolled_up_production") }}*1) >= 1 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_sources_etl_connected_enabled_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_sources_etl_connected_enabled_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_sources_etl_connected_enabled_rolled_up_production }}*1) >= 1 THEN 5
             END * 0.04) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 2 THEN 1
-            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 3 THEN 2
-            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 4 THEN 3
-            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) < 5 THEN 4
-            WHEN ({{ CurrentCustomers.Var("app_number_transformations_connected_enabled_rolled_up_production") }}*1) >= 5 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }}*1) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }}*1) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }}*1) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }}*1) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.app_number_transformations_connected_enabled_rolled_up_production }}*1) >= 5 THEN 5
             END * 0.04) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 2 THEN 1
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 3 THEN 2
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 4 THEN 3
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) < 5 THEN 4
-            WHEN ({{ CurrentCustomers.Var("app_number_sources_connected_enabled_rolled_up_production") }}*1) >= 5 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }}*1) <= 0 OR {{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }}*1) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }}*1) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }}*1) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }}*1) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.app_number_sources_connected_enabled_rolled_up_production }}*1) >= 5 THEN 5
             END * 0.08) +
-            (CASE WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) <= 0 OR {{ CurrentCustomers.Var("app_number_users_in_organization") }} is null THEN 0
-            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 2 THEN 1
-            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 3 THEN 2
-            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 4 THEN 3
-            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) < 5 THEN 4
-            WHEN ({{ CurrentCustomers.Var("app_number_users_in_organization") }}*1) >= 5 THEN 5
+            (CASE WHEN ({{ CurrentCustomers.app_number_users_in_organization }}*1) <= 0 OR {{ CurrentCustomers.app_number_users_in_organization }} is null THEN 0
+            WHEN ({{ CurrentCustomers.app_number_users_in_organization }}*1) < 2 THEN 1
+            WHEN ({{ CurrentCustomers.app_number_users_in_organization }}*1) < 3 THEN 2
+            WHEN ({{ CurrentCustomers.app_number_users_in_organization }}*1) < 4 THEN 3
+            WHEN ({{ CurrentCustomers.app_number_users_in_organization }}*1) < 5 THEN 4
+            WHEN ({{ CurrentCustomers.app_number_users_in_organization }}*1) >= 5 THEN 5
             END * 0.05)

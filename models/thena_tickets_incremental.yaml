@@ -1,5 +1,10 @@
 # Incremental SQL model for thena_tickets
 # This model maintains the latest state of each ticket and supports rolling window queries
+#
+# NOTE: TICKET_ID was removed from PARTITION BY and SELECT columns because the column
+# no longer exists in the upstream warehouse table. Deduplication is now solely by
+# CHANNEL_NAME (one ticket per Slack channel). If the upstream schema ever reintroduces
+# TICKET_ID, consider restoring it to PARTITION BY to support multiple tickets per channel.
 
 models:
   - name: thena_tickets_history
@@ -20,45 +25,55 @@ models:
         {% if lastThis.IsEnabled() and tickets_delta.IsEnabled() %}
           -- Incremental mode: merge previous state with new ticket events
           -- Keep the most recent state for each ticket
-          WITH all_tickets AS (
-            SELECT * FROM {{ lastThis }}
-            UNION ALL
-            SELECT * FROM {{ tickets_delta }}
-          ),
-          latest_tickets AS (
+          SELECT * FROM (
+            WITH all_tickets AS (
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT FROM {{ lastThis }}
+              UNION ALL
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT FROM {{ tickets_delta }}
+            ),
+            latest_tickets AS (
+              SELECT
+                CHANNEL_NAME,
+                STATUS,
+                ESCALATION_TYPE,
+                CREATED_AT,
+                UPDATED_AT,
+                ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME
+                                  ORDER BY CREATED_AT DESC) AS rn
+              FROM all_tickets
+            )
             SELECT
-              *,
-              ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME, TICKET_ID
-                                ORDER BY CREATED_AT DESC) AS rn
-            FROM all_tickets
+              CHANNEL_NAME,
+              STATUS,
+              ESCALATION_TYPE,
+              CREATED_AT,
+              UPDATED_AT
+            FROM latest_tickets
+            WHERE rn = 1
           )
-          SELECT
-            CHANNEL_NAME,
-            TICKET_ID,
-            STATUS,
-            ESCALATION_TYPE,
-            CREATED_AT,
-            UPDATED_AT
-          FROM latest_tickets
-          WHERE rn = 1
         {% else %}
           -- Full refresh mode: process all tickets
-          WITH latest_tickets AS (
+          SELECT * FROM (
+            WITH latest_tickets AS (
+              SELECT
+                CHANNEL_NAME,
+                STATUS,
+                ESCALATION_TYPE,
+                CREATED_AT,
+                UPDATED_AT,
+                ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME
+                                  ORDER BY CREATED_AT DESC) AS rn
+              FROM {{ tickets_full }}
+            )
             SELECT
-              *,
-              ROW_NUMBER() OVER (PARTITION BY CHANNEL_NAME, TICKET_ID
-                                ORDER BY CREATED_AT DESC) AS rn
-            FROM {{ tickets_full }}
+              CHANNEL_NAME,
+              STATUS,
+              ESCALATION_TYPE,
+              CREATED_AT,
+              UPDATED_AT
+            FROM latest_tickets
+            WHERE rn = 1
           )
-          SELECT
-            CHANNEL_NAME,
-            TICKET_ID,
-            STATUS,
-            ESCALATION_TYPE,
-            CREATED_AT,
-            UPDATED_AT
-          FROM latest_tickets
-          WHERE rn = 1
         {% endif %}
       contract:
         is_append_only: false
