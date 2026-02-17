@@ -13,3 +13,94 @@ models:
           type: organization_id
           entity: account
           to_default_stitcher: true
+
+  # Incremental model: maintains a 90-day bounded window of app tracks events.
+  # Downstream entity vars (destination/source deleted counts) read from this
+  # model instead of directly from inputs/app_tracks, so they always see
+  # complete bounded-window data even in incremental mode.
+  - name: recent_app_tracks
+    model_type: sql_template
+    model_spec:
+      occurred_at_col: ORIGINAL_TIMESTAMP
+      materialization:
+        output_type: table
+      single_sql: |
+        {%- set lastThis = this.DeRef(pre_existing=true, dependency="optional", checkpoint_name="baseline") -%}
+        {% set tracks_delta = this.DeRef("inputs/app_tracks/incr_delta_tbl", dependency="coercive", baseline_name="baseline", prereqs=[lastThis]) %}
+        {% set tracks_full = this.DeRef("inputs/app_tracks", prereqs=[tracks_delta.Except()]) %}
+        {# All DeRef before this line. #}
+        {% if lastThis.IsEnabled() and tracks_delta.IsEnabled() %}
+          -- Incremental: merge previous window with new events, re-bound to 90 days
+          SELECT * FROM (
+            WITH combined AS (
+              SELECT EVENT_TEXT, ORIGINAL_TIMESTAMP, CONTEXT_TRAITS_WORKSPACE_ID
+              FROM {{ lastThis }}
+              UNION ALL
+              SELECT EVENT_TEXT, ORIGINAL_TIMESTAMP, CONTEXT_TRAITS_WORKSPACE_ID
+              FROM {{ tracks_delta }}
+            )
+            SELECT EVENT_TEXT, ORIGINAL_TIMESTAMP, CONTEXT_TRAITS_WORKSPACE_ID
+            FROM combined
+            WHERE ORIGINAL_TIMESTAMP > {{ end_time_sql }} - INTERVAL '90 day'
+          )
+        {% else %}
+          -- Full refresh: select all tracks within the 90-day window
+          SELECT * FROM (
+            SELECT EVENT_TEXT, ORIGINAL_TIMESTAMP, CONTEXT_TRAITS_WORKSPACE_ID
+            FROM {{ tracks_full }}
+            WHERE ORIGINAL_TIMESTAMP > {{ end_time_sql }} - INTERVAL '90 day'
+          )
+        {% endif %}
+      contract:
+        is_append_only: false
+      ids:
+        - select: CONTEXT_TRAITS_WORKSPACE_ID
+          type: workspace_id
+          entity: workspace
+
+  # Incremental model: maintains a 90-day bounded window of app identifies events.
+  # Downstream entity vars (distinct user counts) read from this model instead of
+  # directly from inputs/app_identifies, so they always see complete bounded-window
+  # data even in incremental mode. Supports both workspace and account entities.
+  - name: recent_app_identifies
+    model_type: sql_template
+    model_spec:
+      occurred_at_col: ORIGINAL_TIMESTAMP
+      materialization:
+        output_type: table
+      single_sql: |
+        {%- set lastThis = this.DeRef(pre_existing=true, dependency="optional", checkpoint_name="baseline") -%}
+        {% set identifies_delta = this.DeRef("inputs/app_identifies/incr_delta_tbl", dependency="coercive", baseline_name="baseline", prereqs=[lastThis]) %}
+        {% set identifies_full = this.DeRef("inputs/app_identifies", prereqs=[identifies_delta.Except()]) %}
+        {# All DeRef before this line. #}
+        {% if lastThis.IsEnabled() and identifies_delta.IsEnabled() %}
+          -- Incremental: merge previous window with new events, re-bound to 90 days
+          SELECT * FROM (
+            WITH combined AS (
+              SELECT USER_ID, CONTEXT_PAGE_URL, ORIGINAL_TIMESTAMP, ORGANIZATION_ID, WORKSPACES_ID
+              FROM {{ lastThis }}
+              UNION ALL
+              SELECT USER_ID, CONTEXT_PAGE_URL, ORIGINAL_TIMESTAMP, ORGANIZATION_ID, WORKSPACES_ID
+              FROM {{ identifies_delta }}
+            )
+            SELECT USER_ID, CONTEXT_PAGE_URL, ORIGINAL_TIMESTAMP, ORGANIZATION_ID, WORKSPACES_ID
+            FROM combined
+            WHERE ORIGINAL_TIMESTAMP > {{ end_time_sql }} - INTERVAL '90 day'
+          )
+        {% else %}
+          -- Full refresh: select all identifies within the 90-day window
+          SELECT * FROM (
+            SELECT USER_ID, CONTEXT_PAGE_URL, ORIGINAL_TIMESTAMP, ORGANIZATION_ID, WORKSPACES_ID
+            FROM {{ identifies_full }}
+            WHERE ORIGINAL_TIMESTAMP > {{ end_time_sql }} - INTERVAL '90 day'
+          )
+        {% endif %}
+      contract:
+        is_append_only: false
+      ids:
+        - select: ORGANIZATION_ID
+          type: organization_id
+          entity: account
+        - select: WORKSPACES_ID
+          type: workspace_id
+          entity: workspace

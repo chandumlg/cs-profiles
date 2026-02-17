@@ -82,6 +82,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: true
+      is_append_only: true
       with_entity_ids:
         - account
         - workspace
@@ -217,6 +218,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: true
+      is_append_only: true
       with_entity_ids:
         - workspace
       with_columns: []

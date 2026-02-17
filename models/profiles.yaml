@@ -457,47 +457,47 @@ var_groups:
       - entity_var:
           name: app_number_distinct_users_workspaces_days_last_7
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_distinct_users_workspaces_days_last_30
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_distinct_users_workspaces_days_last_90
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_destinations_deleted_days_last_7
           select: count(*)
-          from: inputs/app_tracks
+          from: models/recent_app_tracks
           where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_destinations_deleted_days_last_30
           select: count(*)
-          from: inputs/app_tracks
+          from: models/recent_app_tracks
           where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_destinations_deleted_days_last_90
           select: count(*)
-          from: inputs/app_tracks
+          from: models/recent_app_tracks
           where: EVENT_TEXT = 'destination deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: app_number_sources_deleted_days_last_7
           select: count(*)
-          from: inputs/app_tracks
+          from: models/recent_app_tracks
           where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_sources_deleted_days_last_30
           select: count(*)
-          from: inputs/app_tracks
+          from: models/recent_app_tracks
           where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_sources_deleted_days_last_90
           select: count(*)
-          from: inputs/app_tracks
+          from: models/recent_app_tracks
           where: EVENT_TEXT = 'source deleted' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
   - name: account_basic_vars
     entity_cohort: account/all
@@ -736,17 +736,17 @@ var_groups:
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_7
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_30
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_90
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
           # begins workspace roll ups for both production and development workspaces -- org total
       - entity_var:
@@ -1522,17 +1522,17 @@ var_groups:
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_7
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '7 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_30
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: app_number_distinct_users_organizations_days_last_90
           select: count(DISTINCT USER_ID)
-          from: inputs/app_identifies
+          from: models/recent_app_identifies
           where: CONTEXT_PAGE_URL like '%app.rudderstack.com%' and ORIGINAL_TIMESTAMP > {{end_time_sql}} - INTERVAL '90 day'
           # begins workspace roll ups for both production and development workspaces -- org total
       - entity_var:
