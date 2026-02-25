@@ -694,40 +694,51 @@ var_groups:
           select: any_value(INTERNAL_SLACK_CHANNEL_NAME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+      # --- Thena ticket vars (non-incremental) ---
+      # These vars read directly from inputs/thena_tickets, which is backed by
+      # UNION_UPDATED_MERGED_TICKETS — a view that already deduplicates to one
+      # row per ticket (latest state via ROW_NUMBER PARTITION BY
+      # request_id||team_id ORDER BY updated_at DESC, then filters out merged
+      # tickets). The upstream tables are _create and _update, so the view is
+      # mutable: a ticket's STATUS changes over time (OPEN -> CLOSED etc.).
+      # This makes the input unsuitable for is_append_only / incremental delta.
+      # The original project does plain count(*) with no dedup, and we preserve
+      # that exact semantic. Volume is low (hundreds of tickets), so full rescan
+      # is cheap and correct.
       - entity_var:
           name: thena_currently_open_tickets
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'CLOSED' and STATUS <> 'MERGED'
       - entity_var:
           name: thena_currently_closed_tickets
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS = 'CLOSED'
       - entity_var:
           name: thena_all_tickets_created_last_90_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: thena_all_tickets_created_last_60_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: thena_all_tickets_created_last_30_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: thena_all_tickets_created_last_10_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '10 day'
       - entity_var:
           name: thena_all_escalated_tickets_created_last_15_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '15 day'
       - entity_var:
           name: app_number_users_in_organization
@@ -1480,40 +1491,51 @@ var_groups:
           select: any_value(INTERNAL_SLACK_CHANNEL_NAME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+      # --- Thena ticket vars (non-incremental) ---
+      # These vars read directly from inputs/thena_tickets, which is backed by
+      # UNION_UPDATED_MERGED_TICKETS — a view that already deduplicates to one
+      # row per ticket (latest state via ROW_NUMBER PARTITION BY
+      # request_id||team_id ORDER BY updated_at DESC, then filters out merged
+      # tickets). The upstream tables are _create and _update, so the view is
+      # mutable: a ticket's STATUS changes over time (OPEN -> CLOSED etc.).
+      # This makes the input unsuitable for is_append_only / incremental delta.
+      # The original project does plain count(*) with no dedup, and we preserve
+      # that exact semantic. Volume is low (hundreds of tickets), so full rescan
+      # is cheap and correct.
       - entity_var:
           name: thena_currently_open_tickets
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'CLOSED' and STATUS <> 'MERGED'
       - entity_var:
           name: thena_currently_closed_tickets
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS = 'CLOSED'
       - entity_var:
           name: thena_all_tickets_created_last_90_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '90 day'
       - entity_var:
           name: thena_all_tickets_created_last_60_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '60 day'
       - entity_var:
           name: thena_all_tickets_created_last_30_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '30 day'
       - entity_var:
           name: thena_all_tickets_created_last_10_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '10 day'
       - entity_var:
           name: thena_all_escalated_tickets_created_last_15_days
           select: count(*)
-          from: models/thena_tickets_history
+          from: inputs/thena_tickets
           where: ESCALATION_TYPE = 'manual' and STATUS <> 'NOT_A_REQUEST' and STATUS <> 'MERGED' and CREATED_AT > {{end_time_sql}} - INTERVAL '15 day'
       - entity_var:
           name: app_number_users_in_organization
