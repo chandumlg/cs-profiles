@@ -137,22 +137,27 @@ var_groups:
           name: app_workspace_id
           select: any_value(ID)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_workspace_id}})
       - entity_var:
           name: app_organization_id
           select: any_value(ORGANIZATIONID)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_organization_id}})
       - entity_var:
           name: app_workspace_environment
           select: any_value(ENVIRONMENT)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_workspace_environment}})
       - entity_var:
           name: app_workspace_name
           select: any_value(NAME)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_workspace_name}})
       - entity_var:
           name: app_event_audit_enabled
           select: any_value(eventauditenabled)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_event_audit_enabled}})
       - entity_var:
           name: app_number_destinations_created
           select: count(ID)
@@ -313,10 +318,12 @@ var_groups:
           name: app_rudder_storage
           select: any_value(USERUDDERSERVERSTORAGE)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_rudder_storage}})
       - entity_var:
           name: app_self_storage
           select: any_value(CASE WHEN "DATARETENTIONACCOUNTID" IS NULL THEN TO_BOOLEAN(0) ELSE TO_BOOLEAN(1) END)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_self_storage}})
       - entity_var:
           name: app_event_storage
           select: CASE WHEN {{workspace.app_rudder_storage}} = 'TRUE' THEN 'RUDDER_STORAGE' WHEN {{workspace.app_self_storage}} = 'TRUE' THEN 'SELF_STORAGE' ELSE 'NO_STORAGE' END
@@ -324,6 +331,7 @@ var_groups:
           name: app_data_residency
           select: any_value(DEFAULTREGION)
           from: inputs/app_workspaces
+          merge: any_value({{rowset.app_data_residency}})
       - entity_var:
           name: app_sso_enabled
           select: count(*)
@@ -507,6 +515,7 @@ var_groups:
           select: any_value(name)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_name_basic}})
       - entity_var:
           name: app_org_name_basic
           select: any_value(ORGNAME)
@@ -520,21 +529,25 @@ var_groups:
           select: any_value(id)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_id_basic}})
       - entity_var:
           name: sf_account_status_basic
           select: any_value(ACCOUNT_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_status_basic}})
       - entity_var:
           name: sf_account_sub_status_basic
           select: any_value(ACCOUNT_SUB_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_sub_status_basic}})
       - entity_var:
           name: sf_plan_type_basic
           select: any_value(PRODUCT_TIER_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_plan_type_basic}})
   - name: cust_prosp_detail_vars
     entity_cohort: models/AllCustomersProspects
     vars:
@@ -543,6 +556,7 @@ var_groups:
           select: any_value(name)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_name}})
       - entity_var:
           name: app_org_name
           select: any_value(ORGNAME)
@@ -556,26 +570,31 @@ var_groups:
           select: any_value(id)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_id}})
       - entity_var:
           name: sf_account_status
           select: any_value(ACCOUNT_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_status}})
       - entity_var:
           name: sf_account_sub_status
           select: any_value(ACCOUNT_SUB_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_sub_status}})
       - entity_var:
           name: sf_plan_type
           select: any_value(PRODUCT_TIER_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_plan_type}})
       - entity_var:
           name: sf_domain
           select: any_value(DOMAIN_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_domain}})
       - entity_var:
           name: app_number_of_workspaces_total
           select: count(id)
@@ -595,11 +614,13 @@ var_groups:
           select: any_value(CONTRACTED_EVENT_VOLUME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_contracted_event_volume}})
       - entity_var:
           name: sf_arr
           select: any_value(CURRENT_ARR_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_arr}})
       # - entity_var:
       #     name: sf_pipeline_arr
       #     select: MAX(AMOUNT)
@@ -634,26 +655,31 @@ var_groups:
           select: any_value(KICKOFF_DATE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_kickoff_date}})
       - entity_var:
           name: sf_customer_signed_date
           select: any_value(CUSTOMER_SIGNED_DATE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_customer_signed_date}})
       - entity_var:
           name: sf_go_live_date
           select: any_value(GO_LIVE_DATE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_go_live_date}})
       - entity_var:
           name: sf_customer_health_color
           select: any_value(CUSTOMER_HEALTH_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_customer_health_color}})
       - entity_var:
           name: sf_customer_health_score
           select: max(HEALTH_SCORE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: max({{rowset.sf_customer_health_score}})
       - entity_var:
           name: sf_call_count_last_90
           select: count(*)
@@ -689,11 +715,13 @@ var_groups:
           select: any_value(SLACK_CHANNEL_NAME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_slack_channel_name}})
       - entity_var:
           name: sf_internal_slack_channel_name
           select: any_value(INTERNAL_SLACK_CHANNEL_NAME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_internal_slack_channel_name}})
       # --- Thena ticket vars (incremental via CDC model) ---
       # These vars read from models/thena_current_state, an incremental CDC
       # model that deduplicates _CREATE + _UPDATE base tables (both append-only)
@@ -1314,6 +1342,7 @@ var_groups:
           select: any_value(name)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_name}})
       - entity_var:
           name: app_org_name
           select: any_value(ORGNAME)
@@ -1327,26 +1356,31 @@ var_groups:
           select: any_value(id)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_id}})
       - entity_var:
           name: sf_account_status
           select: any_value(ACCOUNT_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_status}})
       - entity_var:
           name: sf_account_sub_status
           select: any_value(ACCOUNT_SUB_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_account_sub_status}})
       - entity_var:
           name: sf_plan_type
           select: any_value(PRODUCT_TIER_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_plan_type}})
       - entity_var:
           name: sf_domain
           select: any_value(DOMAIN_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_domain}})
       - entity_var:
           name: app_number_of_workspaces_total
           select: count(id)
@@ -1366,11 +1400,13 @@ var_groups:
           select: any_value(CONTRACTED_EVENT_VOLUME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_contracted_event_volume}})
       - entity_var:
           name: sf_arr
           select: any_value(CURRENT_ARR_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_arr}})
       # - entity_var:
       #     name: sf_pipeline_arr
       #     select: MAX(AMOUNT)
@@ -1405,26 +1441,31 @@ var_groups:
           select: any_value(KICKOFF_DATE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_kickoff_date}})
       - entity_var:
           name: sf_customer_signed_date
           select: any_value(CUSTOMER_SIGNED_DATE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_customer_signed_date}})
       - entity_var:
           name: sf_go_live_date
           select: any_value(GO_LIVE_DATE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_go_live_date}})
       - entity_var:
           name: sf_customer_health_color
           select: any_value(CUSTOMER_HEALTH_STATUS_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_customer_health_color}})
       - entity_var:
           name: sf_customer_health_score
           select: max(HEALTH_SCORE_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: max({{rowset.sf_customer_health_score}})
       - entity_var:
           name: sf_call_count_pre_sale
           select: count(*)
@@ -1480,11 +1521,13 @@ var_groups:
           select: any_value(SLACK_CHANNEL_NAME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_slack_channel_name}})
       - entity_var:
           name: sf_internal_slack_channel_name
           select: any_value(INTERNAL_SLACK_CHANNEL_NAME_C)
           from: inputs/sf_account
           where: record_type_id <> '0125x0000006uLeAAI'
+          merge: any_value({{rowset.sf_internal_slack_channel_name}})
       # --- Thena ticket vars (incremental via CDC model) ---
       # These vars read from models/thena_current_state, an incremental CDC
       # model that deduplicates _CREATE + _UPDATE base tables (both append-only)

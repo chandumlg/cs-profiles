@@ -19,6 +19,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - account
       with_columns: []
@@ -133,6 +134,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - account
       with_columns: []
@@ -148,6 +150,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - workspace
         - account
@@ -166,6 +169,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - workspace
       with_columns: []
@@ -180,6 +184,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - workspace
       with_columns: []
@@ -194,6 +199,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - workspace
       with_columns: []
@@ -265,6 +271,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - workspace
       with_columns: []
@@ -279,6 +286,7 @@ inputs:
     contract:
       is_optional: false
       is_event_stream: false
+      is_append_only: true
       with_entity_ids:
         - workspace
       with_columns: []
