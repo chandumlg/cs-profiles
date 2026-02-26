@@ -104,3 +104,71 @@ models:
         - select: WORKSPACES_ID
           type: workspace_id
           entity: workspace
+
+  # Incremental CDC model: maintains the current state of all thena tickets.
+  # Replaces the upstream UNION_UPDATED_MERGED_TICKETS view logic, but
+  # incrementally — using the append-only _CREATE and _UPDATE base tables.
+  #
+  # On full refresh: UNION ALL(_create, _update) → ROW_NUMBER dedup → latest state.
+  # On incremental: UNION ALL(previous_state, create_delta, update_delta) → re-dedup.
+  #
+  # Entity vars read from this model instead of inputs/thena_tickets.
+  # All 14 thena vars (both cohorts) benefit from incremental processing.
+  #
+  # Column assumptions: both _CREATE and _UPDATE tables have
+  # CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT,
+  # REQUEST_ID, TEAM_ID. For _CREATE rows where UPDATED_AT may not exist,
+  # we alias CREATED_AT as UPDATED_AT.
+  - name: thena_current_state
+    model_type: sql_template
+    model_spec:
+      occurred_at_col: UPDATED_AT
+      materialization:
+        output_type: table
+      single_sql: |
+        {%- set lastThis = this.DeRef(pre_existing=true, dependency="optional", checkpoint_name="baseline") -%}
+        {% set create_delta = this.DeRef("inputs/thena_ticket_create/incr_delta_tbl", dependency="coercive", baseline_name="baseline", prereqs=[lastThis]) %}
+        {% set update_delta = this.DeRef("inputs/thena_ticket_update/incr_delta_tbl", dependency="coercive", baseline_name="baseline", prereqs=[lastThis]) %}
+        {% set create_full = this.DeRef("inputs/thena_ticket_create", prereqs=[create_delta.Except()]) %}
+        {% set update_full = this.DeRef("inputs/thena_ticket_update", prereqs=[update_delta.Except()]) %}
+        {# All DeRef before this line. #}
+        {% if lastThis.IsEnabled() and create_delta.IsEnabled() and update_delta.IsEnabled() %}
+          -- Incremental: merge previous state with new creates/updates, re-dedup
+          SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT, REQUEST_ID, TEAM_ID
+          FROM (
+            SELECT *, ROW_NUMBER() OVER (
+              PARTITION BY REQUEST_ID, TEAM_ID ORDER BY UPDATED_AT DESC
+            ) AS _rn
+            FROM (
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT, REQUEST_ID, TEAM_ID
+              FROM {{ lastThis }}
+              UNION ALL
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, CREATED_AT AS UPDATED_AT, REQUEST_ID, TEAM_ID
+              FROM {{ create_delta }}
+              UNION ALL
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT, REQUEST_ID, TEAM_ID
+              FROM {{ update_delta }}
+            )
+          ) WHERE _rn = 1
+        {% else %}
+          -- Full refresh: dedup all creates + updates to latest state per ticket
+          SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT, REQUEST_ID, TEAM_ID
+          FROM (
+            SELECT *, ROW_NUMBER() OVER (
+              PARTITION BY REQUEST_ID, TEAM_ID ORDER BY UPDATED_AT DESC
+            ) AS _rn
+            FROM (
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, CREATED_AT AS UPDATED_AT, REQUEST_ID, TEAM_ID
+              FROM {{ create_full }}
+              UNION ALL
+              SELECT CHANNEL_NAME, STATUS, ESCALATION_TYPE, CREATED_AT, UPDATED_AT, REQUEST_ID, TEAM_ID
+              FROM {{ update_full }}
+            )
+          ) WHERE _rn = 1
+        {% endif %}
+      contract:
+        is_append_only: false
+      ids:
+        - select: CHANNEL_NAME
+          type: slack_channel_name
+          entity: account

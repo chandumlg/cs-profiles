@@ -77,6 +77,39 @@ inputs:
         - select: CHANNEL_NAME
           type: slack_channel_name
           entity: account
+  # Append-only base tables for incremental thena processing.
+  # These replace the mutable UNION_UPDATED_MERGED_TICKETS view for
+  # incremental entity var computation via models/thena_current_state.
+  - name: thena_ticket_create
+    contract:
+      is_optional: false
+      is_event_stream: true
+      is_append_only: true
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.THENA_TICKET_EVENT_STREAM._CREATE
+      occurred_at_col: CREATED_AT
+      ids:
+        - select: CHANNEL_NAME
+          type: slack_channel_name
+          entity: account
+  - name: thena_ticket_update
+    contract:
+      is_optional: false
+      is_event_stream: true
+      is_append_only: true
+      with_entity_ids:
+        - account
+      with_columns: []
+    app_defaults:
+      table: CUSTOMER_SUCCESS.THENA_TICKET_EVENT_STREAM._UPDATE
+      occurred_at_col: UPDATED_AT
+      ids:
+        - select: CHANNEL_NAME
+          type: slack_channel_name
+          entity: account
   - name: app_identifies
     contract:
       is_optional: false
